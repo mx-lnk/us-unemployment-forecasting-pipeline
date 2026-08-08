@@ -1,0 +1,4 @@
+.env
+.unrate_venv/
+__pycache__/
+src/test.py
