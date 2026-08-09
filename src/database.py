@@ -32,7 +32,11 @@ def create_tables(con):
     with open(SQL_DIR / "create_tables.sql", encoding="utf-8") as f:
         con.executescript(f.read())
 
-
+@db_connection_handler
+def upsert_fred_series(con, fred_series_data):
+    with open(SQL_DIR / "upsert_FREDSeries.sql", encoding="utf-8") as f:
+        sql = f.read()
+    con.execute(sql, fred_series_data) 
 
 """
 1. Create tables
@@ -43,3 +47,4 @@ def create_tables(con):
 
 if __name__ == "__main__":
     create_tables()
+    upsert_fred_series()

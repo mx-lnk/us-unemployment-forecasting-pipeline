@@ -4,7 +4,7 @@ Title TEXT NOT NULL,
 DefaultFrequency TEXT NOT NULL,
 Units TEXT NOT NULL,
 ObservationStart TEXT NOT NULL,
-FRED_LastUpdateCD TEXT NOT NULL,
+FRED_LastUpdateLocalTime TEXT NOT NULL,
 FRED_LastUpdateUTC TEXT NOT NULL,
 CreationDate TEXT NOT NULL DEFAULT (datetime('now'))
 );
