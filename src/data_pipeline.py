@@ -12,17 +12,14 @@ SERIES_IDS = ['UNRATE', 'PAYEMS', 'ICSA', 'INDPRO', 'JTSJOL']
 
 def fred_series_data_pipeline():
     # Fetch data from FRED for FREDSeries table
-    url="https://api.stlouisfed.org/fred/series"
-
-    fred_series_params = {
-    "api_key": API_KEY,
-    "file_type": "json"
-    }
+    url = "https://api.stlouisfed.org/fred/series?"
+    results = []
 
     with requests.Session() as session:
         for series_id in SERIES_IDS:
             params = {
-                **fred_series_params,
+                "api_key": API_KEY,
+                "file_type": "json",
                 "series_id": series_id
             }
 
@@ -44,9 +41,55 @@ def fred_series_data_pipeline():
                 "last_update_utc":fred_utc_time.strftime("%Y-%m-%d %H:%M:%S"),
             }
 
-            # Upsert the fetched data to the db ID by ID
-            database.upsert_fred_series(fred_series_data=fred_series_data)
+            results.append(fred_series_data)
+
+    # Write all entires as upsert to the db
+    database.db_upsert_many(sql_script="upsert_FREDSeries.sql", data=results)
+
+
+
+def fred_observations_data_pipeline():
+    # Get earliest common observations start date, short ecos
+    ecos = database.earliest_common_obs_start()
+
+    # Fetch raw observations from FRED for FREDObservations table
+    url = 'https://api.stlouisfed.org/fred/series/observations'
+    results = []
+
+    with requests.Session() as session:
+        for series_id in SERIES_IDS:
+            params = {
+                "api_key": API_KEY,
+                "file_type": "json",
+                "sort_order": "asc",
+                "units": "lin",
+                "observation_start": ecos,
+                "series_id": series_id
+            }
+
+            r = session.get(url=url, params=params, timeout=30)
+            r.raise_for_status()
+
+            data = r.json()
+            entries = data['observations']
+
+            for entry in entries:
+                fred_observations_data = {
+                    "series_id": series_id,
+                    "observation_date": entry['date'],
+                    "native_value": entry['value']
+                }
+            
+                results.append(fred_observations_data)
+
+    # Write all entires as upsert to the db
+    database.db_upsert_many(sql_script="upsert_FREDObservations.sql", data=results)
+
+
+
+
 
 
 if __name__ == "__main__":
     fred_series_data_pipeline()
+    fred_observations_data_pipeline()
