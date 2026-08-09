@@ -12,7 +12,7 @@ CreationDate TEXT NOT NULL DEFAULT (datetime('now'))
 CREATE TABLE IF NOT EXISTS FREDObservations (
     SeriesID TEXT NOT NULL,
     ObservationDate TEXT NOT NULL,
-    NativeValue REAL NOT NULL,
+    NativeValue REAL,
     DateFetched TEXT NOT NULL DEFAULT (datetime('now')),
 
     PRIMARY KEY (SeriesID, ObservationDate),
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS FREDObservations (
 CREATE TABLE IF NOT EXISTS MonthlyFeatures (
     SeriesID TEXT NOT NULL,
     MonthYear TEXT NOT NULL,
-    MonthlyValue REAL NOT NULL,
+    MonthlyValue REAL,
     DateCalculated TEXT NOT NULL DEFAULT (datetime('now')),
 
     PRIMARY KEY (SeriesID, MonthYear),
