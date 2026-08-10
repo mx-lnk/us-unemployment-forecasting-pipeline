@@ -50,6 +50,12 @@ def set_missing_observations_null(con):
     with open(SQL_DIR / "set_missing_FREDObservations_NULL.sql", encoding="utf-8") as f:
         con.executescript(f.read())
 
+@db_connection_handler
+def db_requester_fetchall(con, sql_script):
+    with open(SQL_DIR / sql_script, encoding="utf-8") as f:
+        cursor = con.execute(f.read())
+    data = cursor.fetchall()
+    return data
 
 """
 1. Create tables
@@ -61,4 +67,4 @@ def set_missing_observations_null(con):
 if __name__ == "__main__":
     create_tables()
     earliest_common_obs_start()
-    set_missing_observations_null()
+    # set_missing_observations_null()
