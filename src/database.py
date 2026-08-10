@@ -45,6 +45,11 @@ def db_upsert_many(con, sql_script, data):
         sql = f.read()
     con.executemany(sql, data)
 
+@db_connection_handler
+def set_missing_observations_null(con):
+    with open(SQL_DIR / "set_missing_FREDObservations_NULL.sql", encoding="utf-8") as f:
+        con.executescript(f.read())
+
 
 """
 1. Create tables
@@ -56,3 +61,4 @@ def db_upsert_many(con, sql_script, data):
 if __name__ == "__main__":
     create_tables()
     earliest_common_obs_start()
+    set_missing_observations_null()

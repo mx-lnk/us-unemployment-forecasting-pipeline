@@ -85,6 +85,9 @@ def fred_observations_data_pipeline():
     # Write all entires as upsert to the db
     database.db_upsert_many(sql_script="upsert_FREDObservations.sql", data=results)
 
+    # Replace all missing values in FREDObservations NativeValue to NULL for consistency
+    database.set_missing_observations_null()
+
 
 
 
