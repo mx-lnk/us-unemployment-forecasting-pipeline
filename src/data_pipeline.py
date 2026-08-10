@@ -110,12 +110,11 @@ def monthly_features_data_pipeline():
 
     # Aggregate monthly ICSA with a Pandas df
     column_names = ['series_id', 'month_year', 'monthly_value']
-    df_icsa = pd.DataFrame(icsa_arr)
-    df_icsa.columns = column_names
+    df_icsa = pd.DataFrame(icsa_arr, columns=column_names)
     df_monthly_icsa = (
         df_icsa.groupby("month_year", as_index=False).agg({
             "series_id": "last",
-            "monthly_value": "sum"
+            "monthly_value": lambda x: None if x.isna().any() else x.sum()
         })
     )
     df_monthly_icsa.insert(
@@ -125,11 +124,14 @@ def monthly_features_data_pipeline():
     )
 
     # Put the none-ICSA data into a separate df
-    df_none_ics = pd.DataFrame(none_icsa_arr)
-    df_none_ics.columns = column_names 
+    df_none_ics = pd.DataFrame(none_icsa_arr, columns=column_names)
 
     # Concatenate both dfs and export the as a dict, writable for the db
-    df_all_monthly = pd.concat([df_none_ics, df_monthly_icsa],ignore_index=True)
+    df_all_monthly = pd.concat([df_none_ics, df_monthly_icsa], ignore_index=True)
+    df_all_monthly = df_all_monthly.astype(object).where(
+        pd.notna(df_all_monthly),
+        None
+    )
     db_ready_monthly_values = df_all_monthly.to_dict(orient='records')
 
     # Upsert the dict into the MonthlyFeatures table
