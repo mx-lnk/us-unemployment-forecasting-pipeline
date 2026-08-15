@@ -30,6 +30,9 @@ def get_features():
     time_frames = [1, 3, 6, 12]
     df_features = df_imputed.copy()
 
+    for feature in features:
+        df_features[f"log10_{feature}"] = df_features[feature].apply(np.log10)
+
     for feature in features[0:4]:
         df_features[f"{feature}_pct_change"] = df_features[feature].pct_change()
 
