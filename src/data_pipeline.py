@@ -46,7 +46,7 @@ def fred_series_data_pipeline():
             results.append(fred_series_data)
 
     # Write all entires as upsert to the db
-    database.db_upsert_many(sql_script="upsert_FREDSeries.sql", data=results)
+    database.db_upsert_insert_many(sql_script="upsert_FREDSeries.sql", data=results)
 
 
 
@@ -85,7 +85,7 @@ def fred_observations_data_pipeline():
                 results.append(fred_observations_data)
 
     # Write all entires as upsert to the db
-    database.db_upsert_many(sql_script="upsert_FREDObservations.sql", data=results)
+    database.db_upsert_insert_many(sql_script="upsert_FREDObservations.sql", data=results)
 
     # Replace all missing values in FREDObservations NativeValue to NULL for consistency
     database.set_missing_observations_null()
@@ -135,7 +135,7 @@ def monthly_features_data_pipeline():
     db_ready_monthly_values = df_all_monthly.to_dict(orient='records')
 
     # Upsert the dict into the MonthlyFeatures table
-    database.db_upsert_many(sql_script="upsert_MonthlyFeatures.sql", data=db_ready_monthly_values)
+    database.db_upsert_insert_many(sql_script="upsert_MonthlyFeatures.sql", data=db_ready_monthly_values)
 
 
 if __name__ == "__main__":

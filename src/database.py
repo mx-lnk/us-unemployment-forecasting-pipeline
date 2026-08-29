@@ -40,7 +40,7 @@ def earliest_common_obs_start(con):
     return earliest_common_observation_start
 
 @db_connection_handler
-def db_upsert_many(con, sql_script, data):
+def db_upsert_insert_many(con, sql_script, data):
     with open(SQL_DIR / sql_script, encoding="utf-8") as f:
         sql = f.read()
     con.executemany(sql, data)
@@ -57,12 +57,6 @@ def db_requester_fetchall(con, sql_script):
     data = cursor.fetchall()
     return data
 
-"""
-1. Create tables
-2. Populate FREDSeries from https://api.stlouisfed.org/fred/series? endpoint
-3. Write fetched observations to 'FREDObservations'
-4. Write computed features to 'MonthlyFeatures'
-"""
 
 if __name__ == "__main__":
     create_tables()

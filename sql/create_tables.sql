@@ -33,3 +33,51 @@ CREATE TABLE IF NOT EXISTS MonthlyFeatures (
         REFERENCES FREDSeries(SeriesID)
         ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS Models (
+    ModelID INTEGER PRIMARY KEY,
+    ModelName TEXT NOT NULL,
+    ModelVersion TEXT NOT NULL,
+    Features TEXT NOT NULL,
+    ModelDescription TEXT NOT NULL,
+    DateAdded TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS Runs (
+    RunID INTEGER PRIMARY KEY,
+    ModelID INTEGER NOT NULL,
+
+    EvaluationTrainingStart TEXT NOT NULL,
+    EvaluationTrainingEnd TEXT NOT NULL,
+    TestStart TEXT NOT NULL,
+    TestEnd TEXT NOT NULL,
+
+    Lambda REAL NOT NULL,
+    MAEOptimizingWeight REAL NOT NULL,
+
+    ModelMAE REAL NOT NULL,
+    NaiveMAE REAL NOT NULL,
+    ModelRMSE REAL NOT NULL,
+    NaiveRMSE REAL NOT NULL,
+    ModelMAEImprovement REAL NOT NULL,
+    ModelRMSEImprovement REAL NOT NULL,
+    ModelMAPE REAL NOT NULL,
+    NaiveMAPE REAL NOT NULL,
+    
+    ProdModelTrainingStart TEXT NOT NULL,
+    ProdModelTrainingEnd TEXT NOT NULL,
+    ForecastOrigin TEXT NOT NULL,
+    ForecastTarget TEXT NOT NULL,
+    ModelForecast REAL NOT NULL,
+    NaiveForecast REAL NOT NULL,
+
+    ActualUNRATE REAL,
+    ModelAbsError REAL,
+    NaiveAbsError REAL,
+
+    ExecutionDate TEXT NOT NULL DEFAULT (datetime('now')),
+    
+    FOREIGN KEY (ModelID)
+        REFERENCES Models(ModelID)
+        ON DELETE CASCADE
+);
