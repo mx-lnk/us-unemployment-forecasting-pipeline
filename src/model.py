@@ -4,14 +4,7 @@ from pathlib import Path
 import database
 import feature_pipeline
 
-# --- Get data df from feature pipeline ---
-def get_features():
-    df_features = feature_pipeline.get_feature_selection()
-    feature_set = ['log10_INDPRO', 'log10_JTSJOL', 'log10_UNRATE', 'UNRATE']
-
-    return df_features, feature_set
-
-# --- Run the model ---
+# --- The model ---
 def weighted_ridge_regression(df,
                               feature_set,
                               n_lambda_candidates = 50,
@@ -289,25 +282,34 @@ def weighted_ridge_regression(df,
     return df_test_metrics, df_test_results, df_forecast  
 
 # --- Export results from model to db ---
-def export_results (df_test_metrics, df_forecast, model_id):
+def export_results (df_test_metrics, df_forecast):
 
     # prepare a combined dict for writing to Runs
     combined_df = pd.concat([df_test_metrics.reset_index(drop=True), df_forecast.reset_index(drop=True)], axis=1)
     combined_dict = combined_df.to_dict(orient='records')[0]
     combined_dict.update({
-        "model_id": model_id,
         "actual_unrate": None,
         "model_abs_error": None,
         "naive_abs_error": None
     })
 
-    # write to dict to Runs
-    database.db_upsert_insert_many(sql_script="insert_Runs.sql", data=combined_dict)
+    # convert dtypes period and np.float/.int into sqlite compatible datatypes
+    for key, value in combined_dict.items():
+        if isinstance(value, pd.Period):
+            combined_dict[key] = str(value)
+        elif isinstance(value, np.generic):
+            combined_dict[key] = value.item()
+
+    # write to dict to Runs 
+    # execute many expects a list, hence wrap the dict into one
+    database.db_upsert_insert_many(sql_script="insert_Runs.sql", data=[combined_dict])
 
 
 
 if __name__ == "__main__":
-    df_features, feature_set = get_features()
+    df_features = feature_pipeline.get_feature_selection()
+    feature_set = ['log10_INDPRO', 'log10_JTSJOL', 'log10_UNRATE', 'UNRATE']
+
     df_test_metrics, df_test_results, df_forecast = weighted_ridge_regression(df=df_features, feature_set=feature_set)
     print(df_test_metrics)
-    export_results(df_test_metrics, df_forecast, model_id=1)
+    export_results(df_test_metrics, df_forecast)

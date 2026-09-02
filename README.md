@@ -1,0 +1,1 @@
+1. create a .env containing the api key -> add pattern

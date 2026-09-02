@@ -1,6 +1,4 @@
 INSERT INTO Runs (
-    ModelID,
-
     EvaluationTrainingStart,
     EvaluationTrainingEnd,
     TestStart,
@@ -31,8 +29,6 @@ INSERT INTO Runs (
 )
 
 VALUES (
-    :model_id,
-
     :evaluation_training_start,
     :evaluation_training_end,
     :test_start,

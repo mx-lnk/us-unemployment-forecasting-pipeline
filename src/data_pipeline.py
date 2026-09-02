@@ -10,19 +10,18 @@ import pandas as pd
 ROOT_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT_DIR / ".env")
 API_KEY = os.environ['KEY']
-SERIES_IDS = ['UNRATE', 'PAYEMS', 'ICSA', 'INDPRO', 'JTSJOL']
 
-def fred_series_data_pipeline():
+def fred_series_data_pipeline(series_ids):
     # Fetch data from FRED for FREDSeries table
     url = "https://api.stlouisfed.org/fred/series?"
     results = []
 
     with requests.Session() as session:
-        for series_id in SERIES_IDS:
+        for ID in series_ids:
             params = {
                 "api_key": API_KEY,
                 "file_type": "json",
-                "series_id": series_id
+                "series_id": ID
             }
 
             r = session.get(url=url, params=params, timeout=30)
@@ -50,7 +49,7 @@ def fred_series_data_pipeline():
 
 
 
-def fred_observations_data_pipeline():
+def fred_observations_data_pipeline(series_ids):
     # Get earliest common observations start date, short ecos
     ecos = database.earliest_common_obs_start()
 
@@ -59,14 +58,14 @@ def fred_observations_data_pipeline():
     results = []
 
     with requests.Session() as session:
-        for series_id in SERIES_IDS:
+        for ID in series_ids:
             params = {
                 "api_key": API_KEY,
                 "file_type": "json",
                 "sort_order": "asc",
                 "units": "lin",
                 "observation_start": ecos,
-                "series_id": series_id
+                "series_id": ID
             }
 
             r = session.get(url=url, params=params, timeout=30)
@@ -77,7 +76,7 @@ def fred_observations_data_pipeline():
 
             for entry in entries:
                 fred_observations_data = {
-                    "series_id": series_id,
+                    "series_id": ID,
                     "observation_date": entry['date'],
                     "native_value": entry['value']
                 }
@@ -139,6 +138,8 @@ def monthly_features_data_pipeline():
 
 
 if __name__ == "__main__":
-    fred_series_data_pipeline()
-    fred_observations_data_pipeline()
+    SERIES_IDS = ['UNRATE', 'PAYEMS', 'ICSA', 'INDPRO', 'JTSJOL']
+
+    fred_series_data_pipeline(series_ids=SERIES_IDS)
+    fred_observations_data_pipeline(series_ids=SERIES_IDS)
     monthly_features_data_pipeline()

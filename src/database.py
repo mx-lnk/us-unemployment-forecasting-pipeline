@@ -57,8 +57,18 @@ def db_requester_fetchall(con, sql_script):
     data = cursor.fetchall()
     return data
 
+@db_connection_handler
+def get_fred_last_update_local(con, series_ids):
+    
+    with open(SQL_DIR / "get_FREDSeries_last_update_local.sql", encoding="utf-8") as f:
+        query = f.read()
+
+    placeholders = ", ".join("?" for ID in series_ids)
+    query = query.format(placeholder_ids=placeholders)
+    cursor = con.execute(query, series_ids)
+    return cursor.fetchall()
 
 if __name__ == "__main__":
     create_tables()
-    earliest_common_obs_start()
+    # earliest_common_obs_start()
     # set_missing_observations_null()
