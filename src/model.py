@@ -5,16 +5,15 @@ import database
 import feature_pipeline
 
 # --- The model ---
-def weighted_ridge_regression(df,
-                              feature_set,
+def weighted_ridge_regression(feature_set,
+                              df,
                               n_lambda_candidates = 50,
                               n_lambda_optimization_steps = 10,
                               lower_lambda = 1e-6,
                               upper_lambda = 1e4,
                               print_details = False,
-                              forecast_mode = True,
+                              forecast_mode = False,
                               backtest_last_origin = None):
-
     # zero-variance guard
     def zero_variance_guard(std_values):
         if np.any(np.isclose(std_values, 0)):
@@ -27,18 +26,19 @@ def weighted_ridge_regression(df,
 
         backtest_last_origin = pd.Period(backtest_last_origin, freq='M')
 
-        if backtest_last_origin > df['month_year'].max():
-            raise Exception(f"Your back test end date has to be below the most recent observation date ({df['month_year'].max()})!")
+        if backtest_last_origin >= df['year_month_t'].max():
+            raise Exception(f"Your last origin backtest date has to be before the most recent observation date ({df['year_month_t'].max()})!")
         
-        df = df[df['month_year'] <= (backtest_last_origin)].copy()
+        df = df[df['year_month_t'] <= (backtest_last_origin)].copy()
 
         if len(df) < 10 * len(feature_set):
-            raise Exception(f"For your back test end date are not enough observations available!\nPlease choose a end date beyond {(df['month_year'].min() + 10 * len(feature_set)) - 1}")
+            raise Exception(f"For your back test end date are not enough observations available!\nPlease choose a end date beyond {(df['year_month_t'].min() + 10 * len(feature_set)) - 1}")
 
         print(f"BACKTEST MODE ENABLED")
+        
     # split data into training, validation, test, and target
     target = "UNRATE_t+1"
-    cols = ['month_year'] + feature_set + ['UNRATE', target]
+    cols = ['year_month_t'] + feature_set + ['UNRATE_t', target]
     cols = list(dict.fromkeys(cols))
 
     df_tvt = df[cols].dropna().copy() # tvt -> training, validation, and testing
@@ -60,8 +60,8 @@ def weighted_ridge_regression(df,
     y_train_full = df_tvt[target].iloc[:val_end].to_numpy()
     y_test = df_tvt[target].iloc[val_end:].to_numpy()
 
-    y_pred_naive_val = df_tvt['UNRATE'].iloc[train_end:val_end].to_numpy()
-    y_pred_naive_test = df_tvt['UNRATE'].iloc[val_end:].to_numpy()
+    y_pred_naive_val = df_tvt['UNRATE_t'].iloc[train_end:val_end].to_numpy()
+    y_pred_naive_test = df_tvt['UNRATE_t'].iloc[val_end:].to_numpy()
 
     # standardize via z-score X and centering y
     def standardizing_X_centering_y(X_train, X_input, y_train):
@@ -210,10 +210,10 @@ def weighted_ridge_regression(df,
         model_rmse_improvement = (1 - (model_rmse / naive_rmse)) * 100
 
     df_test_metrics = pd.DataFrame([{
-        "evaluation_training_start": df_tvt['month_year'].iloc[0],
-        "evaluation_training_end": df_tvt['month_year'].iloc[val_end - 1],
-        "test_start": df_tvt['month_year'].iloc[val_end],
-        "test_end": df_tvt['month_year'].iloc[-1],
+        "evaluation_training_start": df_tvt['year_month_t'].iloc[0],
+        "evaluation_training_end": df_tvt['year_month_t'].iloc[val_end - 1],
+        "test_start": df_tvt['year_month_t'].iloc[val_end],
+        "test_end": df_tvt['year_month_t'].iloc[-1],
         "lambda": best_penalty_param,
         "mae_optimizing_weight": best_mae_w,
         "model_mae": model_mae,
@@ -229,8 +229,8 @@ def weighted_ridge_regression(df,
     # --- TEST RESULTS ---
 
     df_test_results = pd.DataFrame({
-        "forecast_origin_t": df_tvt['month_year'].iloc[val_end:].copy(),
-        "forecast_target_t+1": df_tvt['month_year'].iloc[val_end:].copy() + 1,
+        "forecast_origin_t": df_tvt['year_month_t'].iloc[val_end:].copy(),
+        "forecast_target_t+1": df_tvt['year_month_t'].iloc[val_end:].copy() + 1,
         "UNRATE_t+1": y_test,
         "y_pred_model_t+1": y_pred_test,
         "y_pred_naive_t+1": y_pred_naive_test,
@@ -243,10 +243,10 @@ def weighted_ridge_regression(df,
 
     if forecast_mode:
         # use all available data
-        final_train_cols = ['month_year'] + feature_set + [target]
+        final_train_cols = ['year_month_t'] + feature_set + [target]
         final_train_cols = list(dict.fromkeys(final_train_cols))
 
-        forecast_cols = (['month_year'] + feature_set + ['UNRATE'])
+        forecast_cols = (['year_month_t'] + feature_set + ['UNRATE_t'])
         forecast_cols = list(dict.fromkeys(forecast_cols))
 
         df_final_train = df[final_train_cols].dropna().copy()
@@ -256,7 +256,7 @@ def weighted_ridge_regression(df,
         y_final_train = df_final_train[target].to_numpy()
 
         X_forecast_input = df_forecast_input[feature_set].to_numpy()
-        y_forecast_naive = df_forecast_input['UNRATE'].to_numpy()
+        y_forecast_naive = df_forecast_input['UNRATE_t'].to_numpy()
 
         Z_final_train, Z_forecast, y_final_train_mean, y_final_train_centered = standardizing_X_centering_y(X_final_train,
                                                                                                             X_forecast_input,
@@ -271,15 +271,18 @@ def weighted_ridge_regression(df,
                                y_forecast_naive)
 
         df_forecast = pd.DataFrame({
-            "production_model_training_start": df_final_train['month_year'].iloc[0],
-            "production_model_training_end": df_final_train['month_year'].iloc[-1],
-            "forecast_origin": df_forecast_input['month_year'].to_numpy(),
-            "forecast_target": (df_forecast_input['month_year'] + 1).to_numpy(),
-            "model_forecast": y_forecast,
-            "naive_forecast": y_forecast_naive
+            "production_model_training_start": df_final_train['year_month_t'].iloc[0],
+            "production_model_training_end": df_final_train['year_month_t'].iloc[-1],
+            "forecast_origin_t": df_forecast_input['year_month_t'].to_numpy(),
+            "forecast_target_t+1": (df_forecast_input['year_month_t'] + 1).to_numpy(),
+            "lambda": best_penalty_param,
+            "mae_optimizing_weight": best_mae_w,
+            "UNRATE_forecast": y_forecast
         })
 
-    return df_test_metrics, df_test_results, df_forecast  
+    return df_test_metrics, df_test_results, df_forecast    
+
+
 
 # --- Export results from model to db ---
 def export_results (df_test_metrics, df_forecast):
@@ -307,9 +310,9 @@ def export_results (df_test_metrics, df_forecast):
 
 
 if __name__ == "__main__":
-    df_features = feature_pipeline.get_feature_selection()
-    feature_set = ['log10_INDPRO', 'log10_JTSJOL', 'log10_UNRATE', 'UNRATE']
+    df_features = feature_pipeline.get_features()
+    feature_set = ['log_10_JTSJOL_t-1', 'UNRATE_t', 'INDPRO_t-1']
 
-    df_test_metrics, df_test_results, df_forecast = weighted_ridge_regression(df=df_features, feature_set=feature_set)
-    print(df_test_metrics)
-    export_results(df_test_metrics, df_forecast)
+    df_test_metrics, df_test_results, df_forecast = weighted_ridge_regression(df=df_features, feature_set=feature_set, forecast_mode=True)
+    print(df_forecast)
+    # export_results(df_test_metrics, df_forecast)
