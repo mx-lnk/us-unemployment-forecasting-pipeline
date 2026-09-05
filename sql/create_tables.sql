@@ -22,18 +22,6 @@ CREATE TABLE IF NOT EXISTS FREDObservations (
         ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS MonthlyFeatures (
-    SeriesID TEXT NOT NULL,
-    MonthYear TEXT NOT NULL,
-    MonthlyValue REAL,
-    DateCalculated TEXT NOT NULL DEFAULT (datetime('now')),
-
-    PRIMARY KEY (SeriesID, MonthYear),
-    FOREIGN KEY (SeriesID)
-        REFERENCES FREDSeries(SeriesID)
-        ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS Runs (
     RunID INTEGER PRIMARY KEY,
 
