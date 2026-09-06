@@ -39,6 +39,7 @@ def fred_series_data_pipeline(series_ids):
                 "frequency": data['seriess'][0]['frequency'],
                 "units": data['seriess'][0]['units'],
                 "observation_start": data['seriess'][0]['observation_start'],
+                "observation_end": data['seriess'][0]['observation_end'],
                 "last_update_local_time": fred_local_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "last_update_utc":fred_utc_time.strftime("%Y-%m-%d %H:%M:%S"),
             }
@@ -96,5 +97,5 @@ def fred_observations_data_pipeline(series_ids):
 if __name__ == "__main__":
     SERIES_IDS = ['UNRATE', 'INDPRO', 'JTSJOL']
 
-    # fred_series_data_pipeline(series_ids=SERIES_IDS)
-    # fred_observations_data_pipeline(series_ids=SERIES_IDS)
+    fred_series_data_pipeline(series_ids=SERIES_IDS)
+    fred_observations_data_pipeline(series_ids=SERIES_IDS)

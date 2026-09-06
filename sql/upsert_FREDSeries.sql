@@ -4,8 +4,9 @@ INSERT INTO FREDSeries (
     DefaultFrequency,
     Units,
     ObservationStart,
-    FRED_LastUpdateLocalTime,
-    FRED_LastUpdateUTC
+    ObservationEnd,
+    FREDLastUpdateLocalTime,
+    FREDLastUpdateUTC
 )
 VALUES (
     :series_id,
@@ -13,6 +14,7 @@ VALUES (
     :frequency,
     :units,
     :observation_start,
+    :observation_end,
     :last_update_local_time,
     :last_update_utc
 )
@@ -22,5 +24,6 @@ ON CONFLICT(SeriesID) DO UPDATE SET
     DefaultFrequency = excluded.DefaultFrequency,
     Units = excluded.Units,
     ObservationStart = excluded.ObservationStart,
-    FRED_LastUpdateLocalTime = excluded.FRED_LastUpdateLocalTime,
-    FRED_LastUpdateUTC = excluded.FRED_LastUpdateUTC;
+    ObservationEnd = excluded.ObservationEnd,
+    FREDLastUpdateLocalTime = excluded.FREDLastUpdateLocalTime,
+    FREDLastUpdateUTC = excluded.FREDLastUpdateUTC;
