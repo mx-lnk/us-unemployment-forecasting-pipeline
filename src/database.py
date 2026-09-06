@@ -58,9 +58,9 @@ def db_requester_fetchall(con, sql_script):
     return data
 
 @db_connection_handler
-def get_fred_last_update_local(con, series_ids):
+def get_latest_obs_end(con, series_ids):
     
-    with open(SQL_DIR / "get_FREDSeries_last_update_local.sql", encoding="utf-8") as f:
+    with open(SQL_DIR / "get_latest_obs_end.sql", encoding="utf-8") as f:
         query = f.read()
 
     placeholders = ", ".join("?" for ID in series_ids)

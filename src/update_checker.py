@@ -10,17 +10,17 @@ load_dotenv(ROOT_DIR / ".env")
 API_KEY = os.environ['KEY']
 
 
+# --- returns true if new observations for all series IDs are available on FRED ---
 
-# --- returns true if all entries of the final selection if series IDs is outdated ---
+def new_obs_available(series_ids):
 
-def check_db_all_entries_outdated(final_series_ids, feature_set):
-    # get last update date of series IDs, which are part of the feature set, from FRED
+    # get latest observation dates of series IDs from FRED
     with requests.Session() as session:
 
         url = "https://api.stlouisfed.org/fred/series"
-        last_update_fred = {}
+        latest_obs_date_fred = {}
 
-        for ID in final_series_ids:
+        for ID in SERIES_IDS:
             params = {"api_key": API_KEY,
                     "file_type": "json",
                     "series_id": ID}
@@ -30,32 +30,35 @@ def check_db_all_entries_outdated(final_series_ids, feature_set):
 
             data = r.json()
 
-            fred_local_time = datetime.strptime(data['seriess'][0]['last_updated'] + "00", "%Y-%m-%d %H:%M:%S%z")
+            latest_obs = data['seriess'][0]['observation_end']
 
-            last_update_fred.update({ID: fred_local_time.strftime("%Y-%m-%d %H:%M:%S")})
+            latest_obs_date_fred.update({ID: latest_obs})
 
-        last_update_fred = {
+        latest_obs_date_fred = {
         series_id: datetime.fromisoformat(date)
-        for series_id, date in last_update_fred.items()
+        for series_id, date in latest_obs_date_fred.items()
         }
 
-    # get last update date of the final IDs from the feature set from the db
-    last_update_db = {}
-    db = database.get_fred_last_update_local(series_ids=final_series_ids)
-    last_update_db = {
+    # get latest observation dates of series IDs from db
+    latest_obs_date_db = {}
+    db = database.get_latest_obs_end(series_ids=SERIES_IDS)
+    latest_obs_date_db = {
         series_id: datetime.fromisoformat(date)
         for series_id, date in db
     }
 
-    all_db_series_outdated = all(
-    last_update_fred[ID] > last_update_db[ID]
-    for ID in last_update_db
+    # compare if for all series IDs are new observations available on FRED
+    all_db_obs_dates_outdated = all(
+    ID not in latest_obs_date_db
+     or latest_obs_date_fred[ID] > latest_obs_date_db[ID]
+    for ID in latest_obs_date_db
     )
 
-    return all_db_series_outdated
+    return all_db_obs_dates_outdated
+
+
 
 if __name__ == "__main__":
-    FINAL_SERIES_IDS = ['UNRATE', 'INDPRO', 'JTSJOL']
-    feature_set = ['log10_INDPRO', 'log10_JTSJOL', 'log10_UNRATE', 'UNRATE']
+    SERIES_IDS = ['UNRATE', 'INDPRO', 'JTSJOL']
 
-    print(check_db_all_entries_outdated(FINAL_SERIES_IDS, feature_set))
+    print(new_obs_available(SERIES_IDS))
