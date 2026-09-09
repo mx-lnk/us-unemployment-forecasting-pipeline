@@ -20,7 +20,7 @@ def new_obs_available(series_ids):
         url = "https://api.stlouisfed.org/fred/series"
         latest_obs_date_fred = {}
 
-        for ID in SERIES_IDS:
+        for ID in series_ids:
             params = {"api_key": API_KEY,
                     "file_type": "json",
                     "series_id": ID}
@@ -41,7 +41,7 @@ def new_obs_available(series_ids):
 
     # get latest observation dates of series IDs from db
     latest_obs_date_db = {}
-    db = database.get_latest_obs_end(series_ids=SERIES_IDS)
+    db = database.get_latest_obs_end(series_ids)
     latest_obs_date_db = {
         series_id: datetime.fromisoformat(date)
         for series_id, date in db

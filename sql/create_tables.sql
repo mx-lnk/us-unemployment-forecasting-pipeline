@@ -50,9 +50,17 @@ CREATE TABLE IF NOT EXISTS Runs (
     ModelForecast REAL NOT NULL,
     NaiveForecast REAL NOT NULL,
 
-    ActualUNRATE REAL,
-    ModelAbsError REAL,
-    NaiveAbsError REAL,
+    -- Historical values are as they were released during the next period, hence they do not account for revisions
+    ReleaseDateHistorical TEXT,
+    ActualUNRATEHistorical REAL,
+    ModelAbsErrorHistorical REAL,
+    NaiveAbsErrorHistorical REAL,
+
+    -- Live values are up-to-date, hence the may differ from historical values due to revisions
+    ActualUNRATELive REAL,
+    ModelAbsErrorLive REAL,
+    NaiveAbsErrorLive REAL,
+
 
     ExecutionDate TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -85,15 +93,22 @@ CREATE TABLE IF NOT EXISTS Forecasts (
     ModelForecast REAL NOT NULL,
     NaiveForecast REAL NOT NULL,
 
-    ActualUNRATE REAL,
-    ModelAbsError REAL,
-    NaiveAbsError REAL,
+    -- Historical values are as they were released during the next period, hence they do not account for revisions
+    ReleaseDateHistorical TEXT,
+    ActualUNRATEHistorical REAL,
+    ModelAbsErrorHistorical REAL,
+    NaiveAbsErrorHistorical REAL,
+
+    -- Live values are up-to-date, hence the may differ from historical values due to revisions
+    ActualUNRATELive REAL,
+    ModelAbsErrorLive REAL,
+    NaiveAbsErrorLive REAL,
 
     ExecutionDate TEXT NOT NULL,
 
     FOREIGN KEY (RunID)
         REFERENCES Runs(RunID)
-        ON DELETE CASCADE
+        ON DELETE RESTRICT,
     
     UNIQUE (ForecastTarget)
 )   

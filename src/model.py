@@ -277,7 +277,8 @@ def weighted_ridge_regression(feature_set,
             "forecast_target_t+1": (df_forecast_input['year_month_t'] + 1).to_numpy(),
             "lambda": best_penalty_param,
             "mae_optimizing_weight": best_mae_w,
-            "UNRATE_forecast": y_forecast
+            "UNRATE_forecast": y_forecast,
+            "naive_forecast": y_forecast_naive
         })
 
     return df_test_metrics, df_test_results, df_forecast    
@@ -288,12 +289,17 @@ def weighted_ridge_regression(feature_set,
 def export_results (df_test_metrics, df_forecast):
 
     # prepare a combined dict for writing to Runs
-    combined_df = pd.concat([df_test_metrics.reset_index(drop=True), df_forecast.reset_index(drop=True)], axis=1)
+    combined_df = pd.concat([df_test_metrics.drop(columns=['lambda', 'mae_optimizing_weight']).reset_index(drop=True), df_forecast.reset_index(drop=True)], axis=1)
     combined_dict = combined_df.to_dict(orient='records')[0]
     combined_dict.update({
-        "actual_unrate": None,
-        "model_abs_error": None,
-        "naive_abs_error": None
+        "release_date_historical": None,
+        "actual_unrate_historical": None,
+        "model_abs_error_historical": None,
+        "naive_abs_error_historical": None,
+
+        "actual_unrate_live": None,
+        "model_abs_error_live": None,
+        "naive_abs_error_live": None
     })
 
     # convert dtypes period and np.float/.int into sqlite compatible datatypes
@@ -303,10 +309,11 @@ def export_results (df_test_metrics, df_forecast):
         elif isinstance(value, np.generic):
             combined_dict[key] = value.item()
 
+    combined_dict['forecast_target_t1'] = combined_dict.pop('forecast_target_t+1')
+
     # write to dict to Runs 
     # execute many expects a list, hence wrap the dict into one
     database.db_upsert_insert_many(sql_script="insert_Runs.sql", data=[combined_dict])
-
 
 
 if __name__ == "__main__":

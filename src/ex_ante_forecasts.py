@@ -22,13 +22,17 @@ def aggregate_forecast():
         "naive_mape",
         "production_model_training_start",
         "production_model_training_end",
-        "forecast_origin",
-        "forecast_target",
+        "forecast_origin_t",
+        "forecast_target_t1",
         "model_forecast",
         "naive_forecast",
-        "actual_unrate",
-        "model_abs_error",
-        "naive_abs_error",
+        "release_date_historical",
+        "actual_unrate_historical",
+        "model_abs_error_historical",
+        "naive_abs_error_historical",
+        "actual_unrate_live",
+        "model_abs_error_live",
+        "naive_abs_error_live",
         "execution_date"
     ]
     mrf_dict = dict(zip(dict_keys, mrf[0]))

@@ -23,9 +23,14 @@ INSERT INTO Runs (
     ModelForecast,
     NaiveForecast,
 
-    ActualUNRATE,
-    ModelAbsError,
-    NaiveAbsError
+    ReleaseDateHistorical,
+    ActualUNRATEHistorical,
+    ModelAbsErrorHistorical,
+    NaiveAbsErrorHistorical,
+
+    ActualUNRATELive,
+    ModelAbsErrorLive,
+    NaiveAbsErrorLive
 )
 
 VALUES (
@@ -48,12 +53,17 @@ VALUES (
 
     :production_model_training_start,
     :production_model_training_end,
-    :forecast_origin,
-    :forecast_target,
-    :model_forecast,
+    :forecast_origin_t,
+    :forecast_target_t1,
+    :UNRATE_forecast,
     :naive_forecast,
 
-    :actual_unrate,
-    :model_abs_error,
-    :naive_abs_error
+    :release_date_historical,
+    :actual_unrate_historical,
+    :model_abs_error_historical,
+    :naive_abs_error_historical,
+    
+    :actual_unrate_live,
+    :model_abs_error_live,
+    :naive_abs_error_live
 );
