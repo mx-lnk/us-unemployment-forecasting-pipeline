@@ -33,6 +33,11 @@ def create_tables(con):
         con.executescript(f.read())
 
 @db_connection_handler
+def execute_script(con, sql_script):
+    with open(SQL_DIR / sql_script, encoding="utf-8") as f:
+        con.executescript(f.read())
+
+@db_connection_handler
 def earliest_common_obs_start(con):
     with open(SQL_DIR / "most_recent_obs_start.sql", encoding="utf-8") as f:
         cursor = con.execute(f.read())

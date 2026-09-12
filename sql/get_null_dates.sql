@@ -1,0 +1,2 @@
+SELECT DISTINCT ForecastTarget FROM Runs
+WHERE ActualUNRATEHistorical IS NULL;

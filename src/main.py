@@ -4,6 +4,7 @@ import data_pipeline
 import feature_pipeline
 import model
 import ex_ante_forecasts
+import update_actuals
 
 def init_pipeline(series_ids, feature_set, force_execution = False):
 
@@ -45,9 +46,11 @@ def init_pipeline(series_ids, feature_set, force_execution = False):
         #    so that the Forecasts table represents is and ex-ante forecasts collection.
         ex_ante_forecasts.aggregate_forecast()
 
-        # 7) UPSERT historical (as they were release in the next period) as well as
+        # 7) UPDATE Runs and Forecasts tables with historical (as they were release in the next period) as well as
         #    up-to-date (including revisions) values for ActualUNRATE, ModelAbsError, and NaiveAbsError.
-    else: print("No new obs available")
+        update_actuals.updater()
+
+    # else: print("No new obs available")
 
 
         
@@ -56,7 +59,7 @@ if __name__ == "__main__":
     SERIES_IDS = ['UNRATE', 'INDPRO', 'JTSJOL']
     feature_set = ['log_10_JTSJOL_t-1', 'UNRATE_t', 'INDPRO_t-1']
 
-    init_pipeline(series_ids=SERIES_IDS, feature_set=feature_set, force_execution=True)
+    init_pipeline(series_ids=SERIES_IDS, feature_set=feature_set, force_execution=False)
 
 
 
