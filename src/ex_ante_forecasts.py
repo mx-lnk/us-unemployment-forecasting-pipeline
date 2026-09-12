@@ -3,7 +3,7 @@ import database
 def aggregate_forecast():
 
     # will only select the mos recent MonthYear and its most recent ExecutionDate
-    mrf = database.db_requester_fetchall(sql_script="most_recent_forecast.sql")
+    mrf = database.db_requester_fetchall(sql_script="most_recent_run.sql")
     dict_keys = [
         "run_id",
         "evaluation_training_start",
