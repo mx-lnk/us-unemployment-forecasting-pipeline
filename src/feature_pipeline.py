@@ -20,28 +20,32 @@ def get_features():
     df['year_month'] = df['year_month'].dt.to_period('M')
     df.columns.name = None
 
-    # Impute missing values with linear interpolation
-    features = ['INDPRO', 'JTSJOL', 'UNRATE']
-    df_imputed = df.copy()
-    df_imputed[features] = df[features].interpolate(method="linear")
-    df_imputed[df_imputed.isna().any(axis=1)]
+    # In a previous version the df was imputed with linear interpolation.
+    # I scrapped this due to potential look-ahead leakage when backtesting.
+    df_clean = df.copy()
 
     # construct a master df containing all features
     df_features = pd.DataFrame({
-        "year_month_t": df_imputed['year_month'].copy(),
-        "log_10_UNRATE_t": df_imputed['UNRATE'].apply(np.log10).copy(),
-        "log_10_INDPRO_t-1": df_imputed['INDPRO'].shift(1).apply(np.log10).copy(),
-        "log_10_JTSJOL_t-1": df_imputed['JTSJOL'].shift(1).apply(np.log10).copy(),
-        "UNRATE_t": df_imputed['UNRATE'].copy(),
-        "INDPRO_t-1": df_imputed['INDPRO'].shift(1).copy(),
-        "JTSJOL_t-1": df_imputed['JTSJOL'].shift(1).copy(),
-        "UNRATE_t+1": df_imputed['UNRATE'].shift(-1).copy(),
+        "year_month_t": df_clean['year_month'].copy(),
+        "log_10_UNRATE_t": df_clean['UNRATE'].apply(np.log10).copy(),
+        "log_10_INDPRO_t-1": df_clean['INDPRO'].shift(1).apply(np.log10).copy(),
+        "log_10_JTSJOL_t-1": df_clean['JTSJOL'].shift(1).apply(np.log10).copy(),
+        "UNRATE_t": df_clean['UNRATE'].copy(),
+        "INDPRO_t-1": df_clean['INDPRO'].shift(1).copy(),
+        "JTSJOL_t-1": df_clean['JTSJOL'].shift(1).copy(),
+        "UNRATE_t+1": df_clean['UNRATE'].shift(-1).copy(),
     })
 
     # get the indexes of row with NaN values, excluding the target column UNRATE_t+1 which naturally has a NaN in its last row.
-    nan_rows = df_features[df_features.iloc[:,1:-2].isna().any(axis=1)].index.to_list()
+    nan_rows = df_features[df_features.iloc[:,1:-1].isna().any(axis=1)].index.to_list()
     df_features = df_features.drop(nan_rows, axis=0).reset_index(drop=True)
-    df_features
+    df_features = df_features.sort_values("year_month_t", ascending=True).reset_index(drop=True)
+
+    # safeguards against duplicate values and non-ascending "year_month_t" column
+    if df_features["year_month_t"].duplicated().any():
+        raise ValueError("Duplicate periods detected.")
+    if not df_features["year_month_t"].is_monotonic_increasing:
+        raise ValueError("Periods are not chronologically ordered.")
 
     return df_features
 

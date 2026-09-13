@@ -5,7 +5,7 @@ import database
 import feature_pipeline
 
 # --- The model ---
-def weighted_ridge_regression(feature_set,
+def ridge_naive_ensemble(feature_set,
                               df,
                               n_lambda_candidates = 50,
                               n_lambda_optimization_steps = 10,
@@ -252,6 +252,9 @@ def weighted_ridge_regression(feature_set,
         df_final_train = df[final_train_cols].dropna().copy()
         df_forecast_input = df[forecast_cols].dropna().tail(1).copy()
 
+        if df_forecast_input['year_month_t'].item() != df['year_month_t'].max():
+            raise ValueError("The input date for the forecast is not the most up-to-date data point!")
+
         X_final_train = df_final_train[feature_set].to_numpy()
         y_final_train = df_final_train[target].to_numpy()
 
@@ -320,6 +323,6 @@ if __name__ == "__main__":
     df_features = feature_pipeline.get_features()
     feature_set = ['log_10_JTSJOL_t-1', 'UNRATE_t', 'INDPRO_t-1']
 
-    df_test_metrics, df_test_results, df_forecast = weighted_ridge_regression(df=df_features, feature_set=feature_set, forecast_mode=True)
+    df_test_metrics, df_test_results, df_forecast = ridge_naive_ensemble(df=df_features, feature_set=feature_set, forecast_mode=True)
     print(df_forecast)
     # export_results(df_test_metrics, df_forecast)

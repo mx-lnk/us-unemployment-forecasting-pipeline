@@ -26,7 +26,7 @@ def init_pipeline(series_ids, feature_set, force_execution = False):
         df_features = feature_pipeline.get_features()
 
         # 4) run the model
-        df_test_metrics, df_test_results, df_forecast = model.weighted_ridge_regression(
+        df_test_metrics, df_test_results, df_forecast = model.ridge_naive_ensemble(
             feature_set=feature_set,
             df=df_features,
             n_lambda_candidates=50,

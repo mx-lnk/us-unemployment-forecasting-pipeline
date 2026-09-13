@@ -1,10 +1,11 @@
 UPDATE Runs
 SET 
     ModelAbsErrorHistorical = abs(ModelForecast - ActualUNRATEHistorical),
-    NaiveAbsErrorHistorical = abs(NaiveForecast - ActualUNRATEHistorical),
+    NaiveAbsErrorHistorical = abs(NaiveForecast - ActualUNRATEHistorical)
+WHERE ActualUNRATEHistorical IS NOT NULL;
 
+UPDATE Runs
+SET
     ModelAbsErrorLive = abs(ModelForecast - ActualUNRATELive),
     NaiveAbsErrorLive = abs(NaiveForecast - ActualUNRATELive)
-
-WHERE ActualUNRATEHistorical IS NOT NULL
-    AND ActualUNRATELive IS NOT NULL;
+WHERE ActualUNRATELive IS NOT NULL;

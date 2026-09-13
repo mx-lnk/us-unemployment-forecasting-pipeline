@@ -51,7 +51,7 @@ def new_obs_available(series_ids):
     all_db_obs_dates_outdated = all(
     ID not in latest_obs_date_db
      or latest_obs_date_fred[ID] > latest_obs_date_db[ID]
-    for ID in latest_obs_date_db
+    for ID in series_ids
     )
 
     return all_db_obs_dates_outdated
