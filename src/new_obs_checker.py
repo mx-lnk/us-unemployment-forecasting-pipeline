@@ -2,7 +2,7 @@ import requests
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from datetime import datetime, timezone
+from datetime import datetime
 import database
 
 ROOT_DIR = Path(__file__).resolve().parent.parent

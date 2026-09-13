@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 import database
-import numpy as np
-import pandas as pd
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT_DIR / ".env")
