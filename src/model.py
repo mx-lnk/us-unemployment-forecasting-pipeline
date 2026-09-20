@@ -213,16 +213,17 @@ def ridge_naive_ensemble(feature_set,
         "evaluation_training_end": df_tvt['year_month_t'].iloc[val_end - 1],
         "test_start": df_tvt['year_month_t'].iloc[val_end],
         "test_end": df_tvt['year_month_t'].iloc[-1],
-        "lambda": best_penalty_param,
-        "mae_optimizing_weight": best_mae_w,
-        "model_mae": model_mae,
-        "naive_mae": naive_mae,
-        "model_rmse": model_rmse,
-        "naive_rmse": naive_rmse,
-        "model_mae_improvement": model_mae_improvement,
-        "model_rmse_improvement": model_rmse_improvement,
-        "model_mape": model_mape,
-        "naive_mape": naive_mape
+        "lambda": np.round(best_penalty_param, 4),
+        "mae_optimizing_weight": np.round(best_mae_w, 4),
+        "validation_mae": np.round(best_weighted_val_mae, 4),
+        "model_mae": np.round(model_mae, 4),
+        "naive_mae": np.round(naive_mae, 4),
+        "model_rmse": np.round(model_rmse, 4),
+        "naive_rmse": np.round(naive_rmse, 4),
+        "model_mae_improvement": np.round(model_mae_improvement, 4),
+        "model_rmse_improvement": np.round(model_rmse_improvement, 4),
+        "model_mape": np.round(model_mape, 4),
+        "naive_mape": np.round(naive_mape, 4)
     }])
 
     # --- TEST RESULTS ---
@@ -277,10 +278,10 @@ def ridge_naive_ensemble(feature_set,
             "production_model_training_end": df_final_train['year_month_t'].iloc[-1],
             "forecast_origin_t": df_forecast_input['year_month_t'].to_numpy(),
             "forecast_target_t+1": (df_forecast_input['year_month_t'] + 1).to_numpy(),
-            "lambda": best_penalty_param,
-            "mae_optimizing_weight": best_mae_w,
-            "UNRATE_forecast": y_forecast,
-            "naive_forecast": y_forecast_naive
+            "lambda": np.round(best_penalty_param, 4),
+            "mae_optimizing_weight": np.round(best_mae_w, 4),
+            "UNRATE_forecast": np.round(y_forecast, 4),
+            "naive_forecast": np.round(y_forecast_naive, 4)
         })
 
     return df_test_metrics, df_test_results, df_forecast    
