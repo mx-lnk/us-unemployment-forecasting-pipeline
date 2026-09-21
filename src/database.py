@@ -4,6 +4,7 @@ from functools import wraps
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DATA_DIR / "us_unemployment.db"
 SQL_DIR = ROOT_DIR / "sql"
 
