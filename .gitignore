@@ -7,3 +7,5 @@ data/
 logs/
 **/.DS_Store
 .DS_Store
+update_post_release.ipynb
+update_checker.ipynb
